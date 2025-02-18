@@ -4,6 +4,8 @@ import academic.model.Course;
 import academic.model.Student;
 import academic.model.Enrollment;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class Driver1 {
@@ -63,12 +65,20 @@ public class Driver1 {
         }
 
         sc.close();
+        
+        
+        
+        // Sorting berdasarkan kode mata kuliah
+        Collections.sort(courses, Comparator.comparing(Course::getCourseCode));
+
+        Collections.sort(enrollments, Comparator.comparing(Enrollment::getCourseCode));
 
         // Cetak semua Course
         for (Course c : courses) {
             System.out.println(c);
         }
 
+        
         // Cetak semua Student
         for (Student s : students) {
             System.out.println(s);

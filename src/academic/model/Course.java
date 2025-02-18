@@ -30,8 +30,12 @@ public String getNilai (){
     return Nilai; 
 }
 
+public void setNilai(String Nilai) {
+    this.Nilai = Nilai;
+}
 
-@Override 
+
+@Override
 public String toString() { 
     return courseCode+ "|" + courseName+ "|" + sks+ "|"  + Nilai ;
 }
