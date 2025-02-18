@@ -1,5 +1,8 @@
 package academic.driver;
 
+// 12S23019 - Clarasia Simanjuntak
+// 12S23043 - Grace Tiodora
+
 import academic.model.Course;
 import academic.model.Student;
 import academic.model.Enrollment;
@@ -73,12 +76,13 @@ public class Driver1 {
 
         Collections.sort(enrollments, Comparator.comparing(Enrollment::getCourseCode));
 
+        
         // Cetak semua Course
         for (Course c : courses) {
             System.out.println(c);
         }
 
-        
+
         // Cetak semua Student
         for (Student s : students) {
             System.out.println(s);
