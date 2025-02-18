@@ -1,8 +1,5 @@
 package academic.driver;
 
-// 12S23019 - Clarasia Simanjuntak
-// 12S23043 - Grace Tiodora
-
 import academic.model.Course;
 import academic.model.Student;
 import academic.model.Enrollment;
@@ -18,6 +15,7 @@ public class Driver2 {
         ArrayList<Course> courses = new ArrayList<>();
         ArrayList<Student> students = new ArrayList<>();
         ArrayList<Enrollment> enrollments = new ArrayList<>();
+        ArrayList<String> invalidMessages = new ArrayList<>(); // Menyimpan pesan kesalahan
 
         while (true) {
             String input = sc.nextLine();
@@ -27,7 +25,7 @@ public class Driver2 {
 
             if (data.length > 1) {
                 String command = data[0];
-                
+
                 switch (command) {
                     case "course-add":
                         if (data.length == 5) { // Pastikan ada 5 bagian
@@ -41,7 +39,8 @@ public class Driver2 {
                                 int sks = Integer.parseInt(sksStr);
                                 courses.add(new Course(courseCode, courseName, sks, grade));
                             } else {
-                                System.out.println("Invalid SKS for course: " + courseCode);
+                                // Simpan pesan kesalahan jika format SKS salah
+                                invalidMessages.add("invalid course|" + courseCode);
                             }
                         }
                         break;
@@ -63,20 +62,7 @@ public class Driver2 {
                             String academicYear = data[3];
                             String semester = data[4];
 
-                            // Validasi course terlebih dahulu
-                            boolean validCourse = false;
-                            for (Course c : courses) {
-                                if (c.getCourseCode().equals(courseCode)) {
-                                    validCourse = true;
-                                    break;
-                                }
-                            }
-                            if (!validCourse) {
-                                System.out.println("invalid course|" + courseCode);
-                                break; // Hentikan pemrosesan enrollment-add ini
-                            }
-
-                            // Validasi student
+                            // Cek apakah studentId valid
                             boolean validStudent = false;
                             for (Student s : students) {
                                 if (s.getStudentId().equals(studentId)) {
@@ -84,13 +70,25 @@ public class Driver2 {
                                     break;
                                 }
                             }
-                            if (!validStudent) {
-                                System.out.println("invalid student|" + studentId);
-                                break; // Hentikan pemrosesan enrollment-add ini
+                            // Cek apakah courseCode valid
+                            boolean validCourse = false;
+                            for (Course c : courses) {
+                                if (c.getCourseCode().equals(courseCode)) {
+                                    validCourse = true;
+                                    break;
+                                }
                             }
 
-                            // Jika keduanya valid, tambahkan enrollment
-                            enrollments.add(new Enrollment(courseCode, studentId, academicYear, semester, "None"));
+                            if (validStudent && validCourse) {
+                                enrollments.add(new Enrollment(courseCode, studentId, academicYear, semester, "None"));
+                            } else {
+                                if (!validStudent && !invalidMessages.contains("invalid student|" + studentId)) {
+                                    invalidMessages.add("invalid student|" + studentId);
+                                }
+                                if (!validCourse && !invalidMessages.contains("invalid course|" + courseCode)) {
+                                    invalidMessages.add("invalid course|" + courseCode);
+                                }
+                            }
                         }
                         break;
 
@@ -109,6 +107,11 @@ public class Driver2 {
         Collections.sort(students, Comparator.comparing(Student::getStudentId));
         // Urutkan enrollment berdasarkan kode course
         Collections.sort(enrollments, Comparator.comparing(Enrollment::getCourseCode));
+
+        // Cetak semua pesan kesalahan terlebih dahulu
+        for (String invalidMessage : invalidMessages) {
+            System.out.println(invalidMessage);
+        }
 
         // Cetak daftar course
         for (Course c : courses) {
