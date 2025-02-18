@@ -3,10 +3,8 @@ package academic.driver;
 import academic.model.Course;
 import academic.model.Student;
 import academic.model.Enrollment;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Scanner;
+
+import java.util.*;
 
 public class Driver2 {
     public static void main(String[] args) {
@@ -15,7 +13,9 @@ public class Driver2 {
         ArrayList<Course> courses = new ArrayList<>();
         ArrayList<Student> students = new ArrayList<>();
         ArrayList<Enrollment> enrollments = new ArrayList<>();
-        ArrayList<String> invalidMessages = new ArrayList<>(); // Menyimpan pesan kesalahan
+        Set<String> invalidStudents = new HashSet<>(); // Untuk menghindari duplikasi invalid student
+        Set<String> invalidCourses = new HashSet<>();
+        List<String> invalidMessages = new ArrayList<>(); // Menyimpan pesan kesalahan
 
         while (true) {
             String input = sc.nextLine();
@@ -28,20 +28,13 @@ public class Driver2 {
 
                 switch (command) {
                     case "course-add":
-                        if (data.length == 5) { // Pastikan ada 5 bagian
+                        if (data.length == 5) {
                             String courseCode = data[1];
                             String courseName = data[2];
-                            String sksStr = data[3];
+                            int sks = Integer.parseInt(data[3]);
                             String grade = data[4];
 
-                            // Validasi apakah SKS adalah angka
-                            if (isNumeric(sksStr)) {
-                                int sks = Integer.parseInt(sksStr);
-                                courses.add(new Course(courseCode, courseName, sks, grade));
-                            } else {
-                                // Simpan pesan kesalahan jika format SKS salah
-                                invalidMessages.add("invalid course|" + courseCode);
-                            }
+                            courses.add(new Course(courseCode, courseName, sks, grade));
                         }
                         break;
 
@@ -51,6 +44,7 @@ public class Driver2 {
                             String studentName = data[2];
                             String academicYear = data[3];
                             String semester = data[4];
+
                             students.add(new Student(studentId, studentName, academicYear, semester));
                         }
                         break;
@@ -62,32 +56,21 @@ public class Driver2 {
                             String academicYear = data[3];
                             String semester = data[4];
 
-                            // Cek apakah studentId valid
-                            boolean validStudent = false;
-                            for (Student s : students) {
-                                if (s.getStudentId().equals(studentId)) {
-                                    validStudent = true;
-                                    break;
-                                }
+                            // Validasi apakah mahasiswa dan mata kuliah ada
+                            boolean studentExists = isStudentExist(students, studentId);
+                            boolean courseExists = isCourseExist(courses, courseCode);
+
+                            // Cek student dan course, jika invalid
+                            if (!studentExists) {
+                                invalidStudents.add(studentId);
                             }
-                            // Cek apakah courseCode valid
-                            boolean validCourse = false;
-                            for (Course c : courses) {
-                                if (c.getCourseCode().equals(courseCode)) {
-                                    validCourse = true;
-                                    break;
-                                }
+                            if (!courseExists) {
+                                invalidCourses.add(courseCode);
                             }
 
-                            if (validStudent && validCourse) {
+                            // Jika student dan course valid, baru tambahkan enrollment
+                            if (studentExists && courseExists) {
                                 enrollments.add(new Enrollment(courseCode, studentId, academicYear, semester, "None"));
-                            } else {
-                                if (!validStudent && !invalidMessages.contains("invalid student|" + studentId)) {
-                                    invalidMessages.add("invalid student|" + studentId);
-                                }
-                                if (!validCourse && !invalidMessages.contains("invalid course|" + courseCode)) {
-                                    invalidMessages.add("invalid course|" + courseCode);
-                                }
                             }
                         }
                         break;
@@ -98,19 +81,26 @@ public class Driver2 {
                 }
             }
         }
-
         sc.close();
+
+        // Tambahkan error ke list agar output sesuai format
+        for (String studentId : invalidStudents) {
+            invalidMessages.add("invalid student|" + studentId);
+        }
+        for (String courseCode : invalidCourses) {
+            invalidMessages.add("invalid course|" + courseCode);
+        }
+
+        // Cetak semua pesan kesalahan terlebih dahulu
+        for (String msg : invalidMessages) {
+            System.out.println(msg);
+        }
 
         // Urutkan daftar course berdasarkan kode
         Collections.sort(courses, Comparator.comparing(Course::getCourseCode));
-        // Urutkan daftar student berdasarkan studentId
-       
-        Collections.sort(enrollments, Comparator.comparing(Enrollment::getCourseCode));
 
-        // Cetak semua pesan kesalahan terlebih dahulu
-        for (String invalidMessage : invalidMessages) {
-            System.out.println(invalidMessage);
-        }
+        // Urutkan enrollment berdasarkan kode course
+        Collections.sort(enrollments, Comparator.comparing(Enrollment::getCourseCode));
 
         // Cetak daftar course
         for (Course c : courses) {
@@ -128,13 +118,23 @@ public class Driver2 {
         }
     }
 
-    // Fungsi untuk memeriksa apakah string bisa diparse menjadi angka
-    public static boolean isNumeric(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
+    // Fungsi untuk memeriksa apakah mahasiswa sudah ada dalam daftar
+    public static boolean isStudentExist(ArrayList<Student> students, String studentId) {
+        for (Student s : students) {
+            if (s.getStudentId().equals(studentId)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    // Fungsi untuk memeriksa apakah mata kuliah sudah ada dalam daftar
+    public static boolean isCourseExist(ArrayList<Course> courses, String courseCode) {
+        for (Course c : courses) {
+            if (c.getCourseCode().equals(courseCode)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
