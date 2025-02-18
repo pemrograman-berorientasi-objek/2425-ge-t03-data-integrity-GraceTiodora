@@ -104,8 +104,7 @@ public class Driver2 {
         // Urutkan daftar course berdasarkan kode
         Collections.sort(courses, Comparator.comparing(Course::getCourseCode));
         // Urutkan daftar student berdasarkan studentId
-        Collections.sort(students, Comparator.comparing(Student::getStudentId));
-        // Urutkan enrollment berdasarkan kode course
+       
         Collections.sort(enrollments, Comparator.comparing(Enrollment::getCourseCode));
 
         // Cetak semua pesan kesalahan terlebih dahulu
